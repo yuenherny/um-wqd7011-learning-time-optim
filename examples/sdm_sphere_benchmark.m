@@ -2,8 +2,8 @@
 clc; clear;
 
 pkg load symbolic % install first
-source("solvers.m")
-source("hessian_approx.m")
+source("../src/solvers.m")
+source("../src/hessian_approx.m")
 
 % initialize symbol
 syms x y;
