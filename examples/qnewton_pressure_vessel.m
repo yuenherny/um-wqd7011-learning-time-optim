@@ -22,10 +22,12 @@ ddf = function_handle(hessian_mat);
 f = function_handle(f);
 iterations = 10;
 alpha = 0.0001;
-c_init = rand([1 4]) * 200
+c_init = rand([1 4]) * 200 % INITIALIZE WITH PROPER LOWER AND UPPER BOUND!
 c_best = c_init;
 f_best = f(c_init(1), c_init(2), c_init(3), c_init(4));
 B_init = eye(4);
+
+% CONSTRAINTS??
 
 % pass gradient into solver function and return next point
 c_curr = c_init;
