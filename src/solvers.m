@@ -11,7 +11,7 @@ endfunction
 function c_next = quasi_newton_sr1_univariate(c_curr, df, alpha, B_curr)
 
   p_curr = -inv(B_curr) * df(c_curr);
-  c_next = c_curr + alpha * p_curr
+  c_next = c_curr + alpha * p_curr;
 
  endfunction
 
@@ -26,7 +26,7 @@ endfunction
 function c_next = quasi_newton_sr1_bivariate(c_curr, df, alpha, B_curr)
 
   p_curr = -inv(B_curr) * df(c_curr(1), c_curr(2));
-  c_next = c_curr + alpha * p_curr
+  c_next = c_curr + alpha * p_curr;
 
  endfunction
 
