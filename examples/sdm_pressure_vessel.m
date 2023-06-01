@@ -2,7 +2,6 @@
 clc; clear;
 
 pkg load symbolic % install first
-pkg load statistics
 source("../src/solvers.m")
 source("../src/hessian_approx.m")
 source("../src/constraints.m")
@@ -37,11 +36,10 @@ c_curr = transpose(c_init);
 c_best = c_curr;
 f_best = f(c_curr(1), c_curr(2), c_curr(3), c_curr(4));
 
-B_curr = eye(4);
 disp("Starting iterations...\n")
 for iter = 1:iterations
 
-  c_next = quasi_newton_sr1_quadravariate(c_curr, df, alpha, B_curr);
+  c_next = steepest_descent_quadravariate(c_curr, df, alpha);
   f_next = f(c_next(1), c_next(2), c_next(3), c_next(4));
   f_next = f_next + apply_constraints(c_next)
 
@@ -55,9 +53,6 @@ for iter = 1:iterations
     break
   endif
 
-  B_next = sr1_quadravariate(B_curr, c_next, c_curr, df);
-
-  % for next iteration
   c_next = simplebounds(c_next, Lb, Ub);
   c_curr = c_next;
 
