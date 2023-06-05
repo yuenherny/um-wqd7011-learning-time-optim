@@ -2,16 +2,17 @@
 clc; clear;
 
 pkg load symbolic % install first
+pkg load statistics
 source("../src/solvers.m")
 source("../src/hessian_approx.m")
 source("../src/constraints.m")
 
 % initialize symbol
-syms w x y z;
+syms x y z;
 % objection function
-f = 0.6224*w*y*z + 1.7781*x*y^2 + 3.1161*w^2*z + 19.84*w^2*y
-f_sol = 6059.714339;
-c_sol = [0.8125; 0.4375; 42.098446; 176.636596];
+f = (z + 2)*y*x^2
+f_sol = 0.012665;
+c_sol = [0.051749, 0.358179, 11.203763];
 
 % derive gradient
 gradient_mat = gradient(f);
@@ -19,30 +20,35 @@ df = function_handle(gradient_mat)
 f = function_handle(f);
 
 % optim param
-iterations = 10;
-alpha = 0.01;
+iterations = 5000;
+alpha = 0.0001;
 
 % Simple bounds of the search domain
 % Lower bounds and upper bounds
-Lb = [0.1; 0.1; 40; 100];
-Ub = [1; 1; 50; 200];
+Lb = [0.05; 0.25; 2];
+Ub = [2; 1.3; 15];
 
 % Random initial solutions
 for i=1:length(Lb),
   c_init(i)=Lb(i)+(Ub(i)-Lb(i))*rand(1);
 end
 
-c_curr = transpose(c_init);
+c_curr = transpose(c_init)
 c_best = c_curr;
-f_best = f(c_curr(1), c_curr(2), c_curr(3), c_curr(4));
+f_curr = f(c_curr(1), c_curr(2), c_curr(3));
+f_best = f_curr;
+f_next_array = zeros(iterations,1);
+f_next_array(1) = f_curr;
 
+B_curr = eye(3);
 disp("Starting iterations...\n")
 for iter = 1:iterations
 
-  c_next = steepest_descent_quadravariate(c_curr, df, alpha);
-  c_next = simplebounds(c_next, Lb, Ub);
-  f_next = f(c_next(1), c_next(2), c_next(3), c_next(4));
-  f_next = f_next + apply_constraints(c_next)
+  c_next = quasi_newton_sr1_trivariate(c_curr, df, alpha, B_curr);
+  c_next = simplebounds(c_next, Lb, Ub)
+  f_next = f(c_next(1), c_next(2), c_next(3));
+  f_next_array(iter+1) = f_next;
+  f_next = f_next + apply_compression_spring_constraints(c_next)
 
   if f_next < f_best
     c_best = c_next;
@@ -54,7 +60,10 @@ for iter = 1:iterations
     break
   endif
 
+  % for next iteration
+  B_next = sr1_trivariate(B_curr, c_next, c_curr, df);
   c_curr = c_next;
+  f_curr = f_next;
 
 endfor
 
