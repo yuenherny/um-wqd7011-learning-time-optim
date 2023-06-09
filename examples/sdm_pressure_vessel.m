@@ -19,30 +19,51 @@ df = function_handle(gradient_mat)
 f = function_handle(f);
 
 % optim param
-iterations = 10;
-alpha = 0.01;
+iterations = 1000;
+alpha = 1;
+n_sol = 10;
 
 % Simple bounds of the search domain
 % Lower bounds and upper bounds
-Lb = [0.1; 0.1; 40; 100];
-Ub = [1; 1; 50; 200];
+Lb = [0.1 0.1 10 10];
+Ub = [99 99 200 200];
+c_init = zeros([n_sol 4]);
 
 % Random initial solutions
-for i=1:length(Lb),
-  c_init(i)=Lb(i)+(Ub(i)-Lb(i))*rand(1);
+for i=1:n_sol,
+  c_init(i,:)=Lb+(Ub-Lb).*rand([1 4]);
 end
 
-c_curr = transpose(c_init);
+c_curr = c_init
+for i = 1:n_sol
+  for j = 1:2
+    t = c_curr(i, j);
+    c_curr(i) = compute_metal_thickness(t);
+  endfor
+endfor
 c_best = c_curr;
-f_best = f(c_curr(1), c_curr(2), c_curr(3), c_curr(4));
+f_curr = f(c_curr(:,1), c_curr(:,2), c_curr(:,3), c_curr(:,4));
+for i = 1:n_sol
+  f_curr(i,:) = f_curr(i,:) + apply_constraints(c_curr(i,:));
+endfor
+
+f_best = min(f_curr);
+f_best_array = zeros(iterations,1);
+f_best_array(1) = f_best;
 
 disp("Starting iterations...\n")
 for iter = 1:iterations
 
   c_next = steepest_descent_quadravariate(c_curr, df, alpha);
   c_next = simplebounds(c_next, Lb, Ub);
-  f_next = f(c_next(1), c_next(2), c_next(3), c_next(4));
-  f_next = f_next + apply_constraints(c_next)
+  for i = 1:2
+    t = c_curr(:,i);
+    c_curr(:,i) = compute_metal_thickness(t);
+  endfor
+  f_next = f(c_next(:,1), c_next(:,2), c_next(:,3), c_next(:,4));
+  for i = 1:n_sol
+    f_curr(i,:) = f_curr(i,:) + apply_constraints(c_curr(i,:));
+  endfor
 
   if f_next < f_best
     c_best = c_next;

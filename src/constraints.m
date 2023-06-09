@@ -39,7 +39,7 @@ function Z=apply_pressure_vessel_constraints(u)
 
   % Inequality constraints
   g(1)= -u(1)+0.0193*u(3);
-  g(2) = -u(2) + 0.00954*u(3);
+  g(2) = -u(2)+0.00954*u(3);
   g(3) = -pi*u(3)^2*u(4)-(4/3)*pi*u(3)^3+1296000;
   g(4) = u(4)-240;
   g

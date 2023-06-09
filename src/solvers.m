@@ -25,8 +25,8 @@ endfunction
 
 function c_next = steepest_descent_quadravariate(c_curr, df, alpha)
 
-  p_next = -df(c_curr(1), c_curr(2), c_curr(3), c_curr(4))
-  c_next = c_curr + alpha * p_next;
+  p_next = -df(c_curr(:,1), c_curr(:,2), c_curr(:,3), c_curr(:,4))
+  c_next = c_curr + alpha.*p_next;
 
 endfunction
 
@@ -57,5 +57,15 @@ function c_next = quasi_newton_sr1_quadravariate(c_curr, df, alpha, B_curr)
   p_curr = -inv(B_curr) * df(c_curr(1), c_curr(2), c_curr(3), c_curr(4))
   c_next = c_curr + alpha * p_curr;
 
+ endfunction
+
+ function thickness = compute_metal_thickness(t)
+   if(t > 0)
+        thickness = ceil(t/0.0625) * 0.0625;
+   elseif( t < 0)
+        thickness = floor(t/0.0625) * 0.0625;
+   else
+        thickness = 0.0625;
+   endif
  endfunction
 
