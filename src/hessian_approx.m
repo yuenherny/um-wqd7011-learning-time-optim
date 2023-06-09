@@ -47,4 +47,12 @@ function B_next = bfgs_bivariate(B_curr, c_next, c_curr, df)
 
 endfunction
 
+function B_next = bfgs_quadravariate(B_curr, c_next, c_curr, df)
+
+  % calculate B at second point, B1 using BFGS
+  s_curr = c_next - c_curr;
+  y_curr = df(c_next(1),c_next(2), c_next(3), c_next(4)) - df(c_curr(1),c_curr(2), c_next(3), c_next(4));
+  B_next = B_curr - (B_curr*s_curr*transpose(s_curr)*B_curr / (transpose(s_curr)*B_curr*s_curr)) + (y_curr*transpose(y_curr) / (transpose(y_curr)*s_curr));
+
+endfunction
 

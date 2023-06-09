@@ -20,7 +20,7 @@ df = function_handle(gradient_mat)
 f = function_handle(f);
 
 % optim param
-iterations = 100;
+iterations = 1000;
 alpha = 0.01;
 
 % Simple bounds of the search domain
@@ -32,7 +32,7 @@ Ub = [1; 1; 100; 200];
 ##for i=1:length(Lb),
 ##  c_init(i)=Lb(i)+(Ub(i)-Lb(i))*rand(1);
 ##end
-c_init = [0.8125 0.4375 42.098446 176.636596]
+c_init = [1 1 100 200]
 
 c_curr = transpose(c_init)
 for i = 1:2
@@ -41,23 +41,26 @@ for i = 1:2
 endfor
 c_best = c_curr;
 f_curr = f(c_curr(1), c_curr(2), c_curr(3), c_curr(4));
+f_curr = f_curr + apply_pressure_vessel_constraints(c_curr);
+
 f_best = f_curr;
-f_next_array = zeros(iterations,1);
-f_next_array(1) = f_curr;
+f_best_array = zeros(iterations,1);
+f_best_array(1) = f_best;
 
 B_curr = eye(4);
 disp("Starting iterations...\n")
 for iter = 1:iterations
 
-  c_next = quasi_newton_sr1_quadravariate(c_curr, df, alpha, B_curr);
+  c_next = quasi_newton_quadravariate(c_curr, df, alpha, B_curr);
   c_next = simplebounds(c_next, Lb, Ub);
   for i = 1:2
     t = c_curr(i);
     c_curr(i) = compute_metal_thickness(t);
   endfor
   f_next = f(c_next(1), c_next(2), c_next(3), c_next(4));
-  f_next_array(iter+1) = f_next;
+##  f_best_array(iter+1) = f_next;
   f_next = f_next + apply_pressure_vessel_constraints(c_next)
+  f_best_array(iter+1) = f_next;
 
   if f_next < f_best
     c_best = c_next;
@@ -70,7 +73,7 @@ for iter = 1:iterations
   endif
 
   % for next iteration
-  B_next = sr1_quadravariate(B_curr, c_next, c_curr, df);
+  B_next = bfgs_quadravariate(B_curr, c_next, c_curr, df);
   c_curr = c_next;
 
 endfor

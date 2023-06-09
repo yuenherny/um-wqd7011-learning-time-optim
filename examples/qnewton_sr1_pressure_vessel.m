@@ -2,6 +2,7 @@
 clc; clear;
 
 pkg load symbolic % install first
+pkg load statistics
 source("../src/solvers.m")
 source("../src/hessian_approx.m")
 source("../src/constraints.m")
@@ -19,18 +20,21 @@ df = function_handle(gradient_mat)
 f = function_handle(f);
 
 % optim param
-iterations = 1000;
+iterations = 100;
 alpha = 0.01;
 
 % Simple bounds of the search domain
 % Lower bounds and upper bounds
-Lb = [0.1; 0.1; 10; 10];
-Ub = [99; 99; 200; 200];
+Lb = [0.1; 0.1; 10; 100];
+Ub = [1; 1; 100; 200];
 
 % Random initial solutions
-c_init = [1; 1; 100; 200]
+##for i=1:length(Lb),
+##  c_init(i)=Lb(i)+(Ub(i)-Lb(i))*rand(1);
+##end
+c_init = [1 1 100 200]
 
-c_curr = c_init
+c_curr = transpose(c_init)
 for i = 1:2
   t = c_curr(i);
   c_curr(i) = compute_metal_thickness(t);
@@ -43,10 +47,11 @@ f_best = f_curr;
 f_best_array = zeros(iterations,1);
 f_best_array(1) = f_best;
 
+B_curr = eye(4);
 disp("Starting iterations...\n")
 for iter = 1:iterations
 
-  c_next = steepest_descent_quadravariate(c_curr, df, alpha);
+  c_next = quasi_newton_quadravariate(c_curr, df, alpha, B_curr);
   c_next = simplebounds(c_next, Lb, Ub);
   for i = 1:2
     t = c_curr(i);
@@ -67,6 +72,8 @@ for iter = 1:iterations
     break
   endif
 
+  % for next iteration
+  B_next = sr1_quadravariate(B_curr, c_next, c_curr, df);
   c_curr = c_next;
 
 endfor
